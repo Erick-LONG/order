@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteMappingsManager">
+    <list>
+      <list>
+        <remote-mappings server-id="python@ea1d7aaa-8dd4-4251-94a9-8cccc69312ab" />
+        <remote-mappings server-id="python@sftp://zhangfulong@10.211.55.4:22/home/zhangfulong/imooc_env/bin/python3" />
+      </list>
+    </list>
+  </component>
+</project>
