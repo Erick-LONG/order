@@ -1,4 +1,6 @@
 '''统一渲染方法'''
+import datetime
+
 from flask import g, render_template
 
 
@@ -58,3 +60,11 @@ def iPagination(params):
     ret['total'] = total
     ret['range'] = range(ret['from'], ret['end'] + 1)
     return ret
+
+
+'''
+获取当前时间
+'''
+
+def getCurrentDate(format="%Y-%m-%d %H:%M:%S"):
+    return datetime.datetime.now().strftime(format)

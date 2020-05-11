@@ -1,39 +1,69 @@
 ;
 
-var user_edit_ops = {
+var account_set_ops = {
     init:function () {
         this.eventBind()
     },
     eventBind:function () {
-        $(".user_edit_wrap .save").click(function () {
+        $(".wrap_account_set .save").click(function () {
             var btn_target = $(this);
             if(btn_target.hasClass("disabled")){
                 common_ops.alert("正在处理，请不要重复提交！！")
                 return
             }
-            var nickname_target = $(".user_edit_wrap input[name=nickname]");
+            var nickname_target = $(".wrap_account_set input[name=nickname]");
             var nickname = nickname_target.val();
 
-            var email_target = $(".user_edit_wrap input[name=email]");
+            var mobile_target = $(".wrap_account_set input[name=mobile]");
+            var mobile = mobile_target.val();
+
+            var email_target = $(".wrap_account_set input[name=email]");
             var email = email_target.val();
 
-            if(!nickname || nickname.length < 2){
+            var login_name_target = $(".wrap_account_set input[name=login_name]");
+            var login_name = login_name_target.val();
+
+            var login_pwd_target = $(".wrap_account_set input[name=login_pwd]");
+            var login_pwd = login_pwd_target.val();
+
+
+            if(nickname.length < 1){
                 common_ops.tip("请输入符合规范的姓名~~",nickname_target);
                 return false;
             }
 
-            if(!email || email.length < 2){
+            if(mobile.length < 1){
+                common_ops.tip("请输入符合规范的手机号~~",mobile_target);
+                return false;
+            }
+
+            if(email.length < 1){
                 common_ops.tip("请输入符合规范的邮箱~~",email_target);
                 return false;
             }
 
+            if(login_name.length < 1){
+                common_ops.tip("请输入符合规范的登录用户名~~",login_name_target);
+                return false;
+            }
+
+            if(login_pwd.length < 6){
+                common_ops.tip("请输入符合规范的登录密码~~",login_pwd_target);
+                return false;
+            }
+
+
             btn_target.addClass("disabled");
             var data = {
-                nickname:nickname,
-                email:email
+                nickname: nickname,
+                mobile: mobile,
+                email: email,
+                login_pwd: login_pwd,
+                login_name: login_name,
+                id: $(".wrap_account_set input[name=id]").val()
             };
             $.ajax({
-                url:common_ops.buildUrl("/user/edit"),
+                url:common_ops.buildUrl("/account/set"),
                 type:"POST",
                 data: data,
                 dataType:'json',
@@ -42,7 +72,7 @@ var user_edit_ops = {
                     var callback = null;
                     if(res.code == 200){
                         callback = function () {
-                            window.location.href = window.location.href;
+                            window.location.href = common_ops.buildUrl("/account/index");
                         }
                     }
                     common_ops.alert(res.msg,callback)
@@ -54,5 +84,5 @@ var user_edit_ops = {
 };
 
 $(document).ready(function () {
-    user_edit_ops.init();
+    account_set_ops.init();
 });
