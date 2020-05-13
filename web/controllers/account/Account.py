@@ -4,6 +4,7 @@ from common.libs.Helper import ops_render, iPagination,getCurrentDate
 from common.libs.UrlManager import UrlManager
 from common.libs.user.UserService import UserService
 from common.models.User import User
+from sqlalchemy import or_
 from application import app, db
 
 route_account = Blueprint('account_page', __name__)
@@ -16,6 +17,15 @@ def index():
     page = int(req['p']) if ('p' in req and req['p']) else 1
 
     query = User.query
+
+    # 按关键字搜索
+    if 'mix_kw' in req:
+        rule= or_(User.nickname.ilike("%{0}%".format(req['mix_kw'])),User.mobile.ilike("%{0}%".format(req['mix_kw'])))
+        query = query.filter(rule)
+
+    #按状态标签筛选
+    if 'status' in req and int(req['status']) > -1:
+        query = query.filter(User.status == req['status'])
 
     page_params = {
         'total': query.count(),
@@ -31,6 +41,8 @@ def index():
     list = query.order_by(User.uid.desc()).all()[offset:limit]
     resp_data['list'] = list
     resp_data['pages'] = pages
+    resp_data['search_con'] = req
+    resp_data['status_mapping'] = app.config['STATUS_MAPPING']
 
     return ops_render("account/index.html", resp_data)
 
@@ -122,6 +134,42 @@ def set():
         model_user.login_pwd = UserService.genePwd(login_pwd,model_user.login_salt)
 
     db.session.add(model_user)
+    db.session.commit()
+
+    return jsonify(resp)
+
+
+@route_account.route("/ops",methods=["POST"])
+def ops():
+    resp = {'code':200,'msg':'操作成功~','data':{}}
+    req = request.values
+
+    id = req['id'] if 'id' in req else 0
+    act = req['act'] if 'act' in req else ''
+    if not id:
+        resp['code'] = -1
+        resp['msg'] = '请选择要操作的账号~'
+        return jsonify(resp)
+
+    if act not in ['remove','recover']:
+        resp['code'] = -1
+        resp['msg'] = '操作有误，请重试~'
+        return jsonify(resp)
+
+    user_info = User.query.filter_by(uid=id).first()
+    if not user_info:
+        resp['code'] = -1
+        resp['msg'] = '指定账号不存在~'
+        return jsonify(resp)
+
+    if act =='remove':
+        user_info.status = 0
+
+    elif act == 'recover':
+        user_info.status = 1
+
+    user_info.update_time = getCurrentDate()
+    db.session.add(user_info)
     db.session.commit()
 
     return jsonify(resp)

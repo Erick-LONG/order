@@ -42,6 +42,11 @@ def login():
         resp['msg'] = '请输入正确的用户名或密码~~'
         return jsonify(resp)
 
+    if user_info.status != 1:
+        resp['code'] = -1
+        resp['msg'] = '账号已被禁用，联系管理员~~'
+        return jsonify(resp)
+
     response = make_response(json.dumps(resp))
     response.set_cookie(app.config['AUTH_COOKIE_NAME'], "%s#%s" % (UserService.geneAuthCode(user_info), user_info.uid))
     return response
@@ -111,7 +116,6 @@ def resetPwd():
     response = make_response(json.dumps(resp))
     response.set_cookie(app.config['AUTH_COOKIE_NAME'], "%s#%s" % (UserService.geneAuthCode(user_info), user_info.uid))
     return response
-
 
 
 @route_user.route('/logout')
