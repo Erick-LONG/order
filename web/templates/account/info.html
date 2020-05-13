@@ -46,9 +46,20 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-									<tr><td colspan="2">暂无数据</td></tr>
+                                    {% if log_list %}
+                                        {% for item in log_list %}
+                                            <tr>
+                                                <td>{{ item.created_time }}</td>
+                                                <td>{{ item.target_url }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+									    <tr><td colspan="2">暂无数据</td></tr>
+                                    {% endif %}
                                      </tbody>
                                 </table>
+                             <!--分页-->
+                            {% include "common/pagenation.html" %}
                             </div>
                         </div>
                     </div>
