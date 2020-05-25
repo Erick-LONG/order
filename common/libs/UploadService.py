@@ -9,19 +9,23 @@ from common.libs.Helper import getCurrentDate
 
 
 class UploadService():
+
     @staticmethod
     def uploadByfile(file):
         config_upload = app.config['UPLOAD']
         resp = {'code':200,'msg':'操作成功','data':{}}
         filename = secure_filename(file.filename)
         ext = filename.split('.',1)[1]
+
         if ext not in config_upload['ext']:
             resp['code'] = -1
             resp['msg'] = '不允许的扩展类型'
             return resp
+
         root_path = app.root_path + config_upload['prefix_path']
         file_dir = getCurrentDate("%Y%m%d")
         save_dir = root_path + file_dir
+
         if not os.path.exists(save_dir):
             os.mkdir(save_dir)
             os.chmod(save_dir, stat.S_IRWXU | stat.S_IRGRP | stat.S_IRWXO)

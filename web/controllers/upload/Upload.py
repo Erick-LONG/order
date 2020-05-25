@@ -23,10 +23,12 @@ def ueditor():
             except:
                 config_data={}
         return jsonify(config_data)
+
     if action == 'uploadimage':
         return uploadImage()
 
     return 'upload'
+
 
 def uploadImage():
     resp = {'state':'SUCCESS','url':'','title':'','original':''}
