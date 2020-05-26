@@ -35,3 +35,7 @@ UPLOAD = {
     'prefix_url':'/static/upload/'
 }
 
+APP = {
+    'domain':'http://10.211.55.4:8999'
+}
+
