@@ -150,6 +150,9 @@ var common_ops = {
 
         }
         return url + _paramUrl;
+    },
+    buildPicUrl:function (img_key) {
+        return 'http://10.211.55.4:8999/static/upload/' + img_key
     }
 };
 
