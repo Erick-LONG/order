@@ -63,6 +63,7 @@ var food_set_ops = {
             var price = price_target.val();
 
             var summary = $.trim(that.ue.getContent());
+            var summary_target = $("#editor");
 
             var stock_target = $(".wrap_food_set input[name=stock]");
             var stock = stock_target.val();
@@ -91,7 +92,7 @@ var food_set_ops = {
             }
 
             if (summary.length < 10) {
-                common_ops.tip("请输入描述，并不能少于10个字符~~", price_target);
+                common_ops.tip("请输入描述，并不能少于10个字符~~", summary_target);
                 return;
             }
 
