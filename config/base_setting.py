@@ -7,6 +7,9 @@ AUTH_COOKIE_NAME= "mooc_food"
 #过滤URL
 IGNORE_URLS = [
     "^/user/login",
+]
+
+API_IGNORE_URLS = [
     '^/api'
 ]
 

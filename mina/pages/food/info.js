@@ -2,6 +2,7 @@
 //获取应用实例
 var app = getApp();
 var WxParse = require('../../wxParse/wxParse.js');
+var utils = require('../../utils/util.js');
 
 Page({
     data: {
@@ -70,7 +71,25 @@ Page({
         this.bindGuiGeTap();
     },
     addShopCar: function () {
+        var that = this;
+        var data = {
+            'id':this.data.info.id,
+            'number':this.data.buyNumber
+        };
+        wx.request({
+            url:app.buildUrl('/cart/set'),
+            header:app.getRequestHeader(),
+            method:'POST',
+            data:data,
+            success:function(res) {
+                var resp = res.data;
+                app.alert({'content':resp.msg});
+                that.setData({
+                    hideShopPopup:true
+                })
+            }
 
+        })
     },
     buyNow: function () {
         wx.navigateTo({
@@ -136,12 +155,37 @@ Page({
 
                 that.setData({
                     info:resp.data.info,
-                    buyNumMax: resp.data.info.stock
+                    buyNumMax: resp.data.info.stock,
+                    shopCarNum:resp.data.cart_number
                 });
                 WxParse.wxParse('article', 'html', that.data.info.summary, that, 5);
             }
 
         })
+    },
+    onShareAppMessage:function () {
+        var that = this;
+        return{
+            title:that.data.info.name,
+            path:'/path/food/info?id=' + that.data.info.id,
+            success:function (res) {
+                //转发成功
+                wx.request({
+                    url:app.buildUrl('/member/share'),
+                    header:app.getRequestHeader(),
+                    method:'POST',
+                    data:{
+                        url:utils.getCurrentPageUrlWithArgs()
+                    },
+                    success:function (res) {
+
+                    }
+                })
+            },
+            fail:function () {
+                //转发失败
+            }
+        }
     }
 
 });
