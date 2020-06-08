@@ -76,7 +76,7 @@ def getDictFilterField(db_model,select_filed,key_filed,id_list):
     ret = {}
     query = db_model.query
     if id_list and len(id_list) >0:
-        query = query.filter_by(select_filed.in_(id_list))
+        query = query.filter(select_filed.in_(id_list))
     list = query.all()
     if not list:
         return ret
@@ -84,4 +84,14 @@ def getDictFilterField(db_model,select_filed,key_filed,id_list):
         if not hasattr(item,key_filed):
             break
         ret[getattr(item,key_filed)] = item
+    return ret
+
+def selectFilterObj(obj,filed):
+    ret = []
+    for item in obj:
+        if not hasattr(item,filed):
+            continue
+        if getattr(item,filed) in ret:
+            continue
+        ret.append(getattr(item,filed))
     return ret
