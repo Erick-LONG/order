@@ -1,5 +1,5 @@
 # coding: utf-8
-from application import db
+from application import db,app
 
 
 
@@ -26,3 +26,25 @@ class PayOrder(db.Model):
     pay_time = db.Column(db.DateTime, nullable=False, server_default=db.FetchedValue(), info='??????')
     updated_time = db.Column(db.DateTime, nullable=False, server_default=db.FetchedValue(), info='????????')
     created_time = db.Column(db.DateTime, nullable=False, server_default=db.FetchedValue(), info='????')
+
+    @property
+    def pay_status(self):
+        tmp_status = self.status
+        if self.status == 1:
+            tmp_status = self.express_status
+            if self.express_status == 1 and self.comment_status == 0:
+                tmp_status = -5
+            if self.express_status == 1 and self.comment_status == 1:
+                tmp_status = 1
+        return tmp_status
+
+    @property
+    def status_desc(self):
+        return app.config['PAY_STATUS_DISPLAY_MAPPING'][ str( self.pay_status )]
+
+    @property
+    def order_number(self):
+        order_number = self.created_time.strftime("%Y%m%d%H%M%S")
+        order_number = order_number + str(self.id).zfill(5)
+        return order_number
+
