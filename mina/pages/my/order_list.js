@@ -61,6 +61,20 @@ Page({
                     app.alert({'content':resp.msg});
                     return;
                 }
+                var pay_info = resp.data.pay_info;
+                wx.requestPayment({
+                    'timeStamp':pay_info.timeStamp,
+                    'nonceStr':pay_info.nonceStr,
+                    'package':pay_info.package,
+                    'signType':'MD5',
+                    'paySign':pay_info.paySign,
+                    'success':function (res) {
+
+                    },
+                    'fail':function (res) {
+
+                    }
+                })
 
             }
 
