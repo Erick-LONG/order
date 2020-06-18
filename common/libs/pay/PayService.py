@@ -4,6 +4,7 @@ import random
 from application import db
 from common.libs.Helper import getCurrentDate
 from common.libs.food.FoodService import FoodService
+from common.libs.queue.QueueService import QueueService
 from common.models.food.Food import Food
 from common.models.food.FoodSaleChangeLog import FoodSaleChangeLog
 from common.models.pay.PayOrder import PayOrder
@@ -122,6 +123,10 @@ class PayService():
         except Exception as e:
             db.session.rollback()
             return False
+        QueueService.addQueue('pay',{
+            'member_id':pay_order_info.member_id,
+            'pay_order_id':pay_order_info.id
+        })
 
     def addPayCallbackData(self,pay_order_id=0,type='pay',data=''):
         model_callback = PayOrderCallbackData()
