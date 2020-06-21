@@ -6,6 +6,7 @@ from flask import request, jsonify, g
 from application import app, db
 from common.libs.pay.WechatService import WeChatService
 from common.models.member.OauthMemberBind import OauthMemberBind
+from common.models.member.MemberAddress import MemberAddress
 from common.models.pay.PayOrder import PayOrder
 from web.controllers.api import route_api
 from common.models.food.Food import Food
@@ -46,11 +47,18 @@ def orderInfo():
             pay_price = pay_price + item.price * int(food_dic[item.id])
             data_food_list.append(tmp_data)
 
-    default_address = {
-        'name': "编程浪子",
-        'mobile': "12345678901",
-        'detail': "上海市浦东新区XX"
-    }
+    # 获取地址
+    address_info = MemberAddress.query.filter_by(is_default=1, member_id=member_info.id, status=1).first()
+    default_address = ''
+    if address_info:
+        default_address = {
+            "id": address_info.id,
+            "name": address_info.nickname,
+            "mobile": address_info.mobile,
+            "address": "%s%s%s%s" % (
+            address_info.province_str, address_info.city_str, address_info.area_str, address_info.address)
+        }
+
     resp['data']['food_list'] = data_food_list
     resp['data']['pay_price'] = str(pay_price)
     resp['data']['yun_price'] = str(yun_price)
@@ -66,6 +74,7 @@ def orderCreate():
     req = request.values
 
     type = req['type'] if 'type' in req else ''
+    express_address_id = int(req['express_address_id']) if ('express_address_id' in req and req['express_address_id']) else 0
     params_goods = req['goods'] if 'goods' in req else None
 
     items = []
@@ -77,9 +86,23 @@ def orderCreate():
         resp['msg'] = '下单失败：没有选择商品'
         return jsonify(resp)
 
+    address_info = MemberAddress.query.filter_by(id=express_address_id).first()
+    if not address_info or not address_info.status:
+        resp['code'] = -1
+        resp['msg'] = "下单失败：快递地址不对~~"
+        return jsonify(resp)
+
     member_info = g.member_info
     target = PayService()
-    params = {}
+    params = {
+        'express_address_id': address_info.id,
+        'express_info': {
+            'mobile': address_info.mobile,
+            'nickname': address_info.nickname,
+            "address": "%s%s%s%s" % (
+            address_info.province_str, address_info.city_str, address_info.area_str, address_info.address)
+        }
+    }
     resp = target.createOrder(member_info.id, items, params)
     if resp['code'] == 200 and type == 'cart':
         CartService.deleteItem(member_info.id, items)

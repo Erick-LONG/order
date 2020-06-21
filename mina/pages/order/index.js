@@ -8,7 +8,8 @@ Page({
         yun_price: "0.00",
         pay_price: "0.00",
         total_price: "0.00",
-        params: null
+        params: null,
+        express_address_id:0
     },
     onShow: function () {
         var that = this;
@@ -25,7 +26,8 @@ Page({
         var that = this;
         var data = {
             type:this.data.params.type,
-            goods:JSON.stringify(this.data.params.goods)
+            goods:JSON.stringify(this.data.params.goods),
+            express_address_id:that.data.default_address.id
         };
         wx.request({
             url:app.buildUrl("/order/create"),
@@ -82,7 +84,12 @@ Page({
                     yun_price:resp.data.yun_price,
                     total_price:resp.data.total_price
 
-                })
+                });
+                if(that.data.default_address){
+                    that.setData({
+                        express_address_id:that.data.default_address.id
+                    })
+                }
             }
         })
     }

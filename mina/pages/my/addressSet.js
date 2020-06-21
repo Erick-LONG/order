@@ -18,7 +18,7 @@ Page({
         this.initCityData(1);
     },
     //初始化城市数据
-    initCityData:function( level, obj ){
+    initCityData: function (level, obj) {
         if (level == 1) {
             var pinkArray = [];
             for (var i = 0; i < commonCityData.cityData.length; i++) {
@@ -82,6 +82,65 @@ Page({
         wx.navigateBack({});
     },
     bindSave: function (e) {
+        var that = this;
+        var nickename = e.detail.value.nickname;
+        var address = e.detail.value.address;
+        var mobile = e.detail.value.mobile;
+
+        if (nickename == "") {
+            app.tip({"content": "请填写联系人姓名"});
+            return
+        }
+        if (mobile == "") {
+            app.tip({"content": "请填写手机号码"});
+            return;
+        }
+        if (that.data.selProvince == "请选择") {
+            app.tip({"content": "请选择地区"});
+            return;
+        }
+        if (that.data.selCity == "请选择") {
+            app.tip({"content": "请选择地区"});
+            return;
+        }
+        var city_id = commonCityData.cityData[that.data.selProvinceIndex].cityList[that.data.selCityIndex].id;
+        var district_id;
+        if (that.data.selDistrict == '请选择' || !that.data.selDistrict) {
+            district_id = 0;
+        } else {
+            district_id = commonCityData.cityData[that.data.selProvinceIndex].cityList[that.data.selCityIndex].districtList[that.data.selDistrictIndex].id;
+        }
+        if (address == "") {
+            app.tip({"content": "请填写详细地址"});
+            return;
+        }
+
+        wx.request({
+            url: app.buildUrl('/my/address/set'),
+            header: app.getRequestHeader(),
+            method: 'POST',
+            data: {
+                province_id:commonCityData.cityData[that.data.selProvinceIndex].id,
+                province_str:that.data.selProvince,
+                city_id:city_id,
+                city_str:that.data.selCity,
+                district_id:district_id,
+                district_str:that.data.selDistrict,
+                nickname:nickename,
+                address:address,
+                mobile:mobile
+            },
+            success: function (res) {
+                var resp = res.data;
+                app.alert({'content': resp.msg});
+                if (resp.code != 200) {
+                    that.getPayOrder();
+                    return;
+                }
+                //跳转
+                wx.navigateBack({});
+            }
+        })
     },
     deleteAddress: function (e) {
 
