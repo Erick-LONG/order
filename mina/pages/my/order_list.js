@@ -87,7 +87,9 @@ Page({
         this.orderOps(e.currentTarget.dataset.id, 'confirm', '确认收到货了吗？')
     },
     orderComment: function (e) {
-
+        wx.navigateTo({
+            url:'/pages/my/comment?order_sn='+e.currentTarget.dataset.id
+        });
     },
     orderOps: function (order_sn, act, msg) {
         var that = this;

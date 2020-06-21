@@ -2,12 +2,14 @@ import json
 
 from flask import request, jsonify, g
 
+from application import db
+from common.models.member.MemberComments import MemberComment
 from web.controllers.api import route_api
 from common.models.food.Food import Food
 from common.models.pay.PayOrder import PayOrder
 from common.models.pay.PayOrderItem import PayOrderItem
 
-from common.libs.Helper import selectFilterObj,getDictFilterField
+from common.libs.Helper import selectFilterObj, getDictFilterField, getCurrentDate
 from common.libs.UrlManager import UrlManager
 
 
@@ -66,6 +68,50 @@ def myOderList():
             data_pay_order_list.append(tmp_data)
 
     resp['data']['pay_order_list'] = data_pay_order_list
+
+    return jsonify(resp)
+
+
+@route_api.route('/my/comment/add',methods=['POST'])
+def myCommentAdd():
+    resp = {'code': 200, 'msg': '操作成功', 'data': {}}
+    member_info = g.member_info
+    req = request.values
+    order_sn = req['order_sn'] if 'order_sn' in req else ''
+    score = req['score'] if 'score' in req else 10
+    content = req['content'] if 'content' in req else ''
+
+    pay_order_info = PayOrder.query.filter_by(order_sn=order_sn,member_id=member_info.id).first()
+    if not pay_order_info:
+        resp['code'] = -1
+        resp['msg'] = '系统繁忙请稍后再试-6'
+        return jsonify(resp)
+    if pay_order_info.comment_status:
+        resp['code'] = -1
+        resp['msg'] = '已经评价过了'
+        return jsonify(resp)
+
+    pay_order_items = PayOrderItem.query.filter_by(pay_order_id=pay_order_info.id).all()
+    food_ids = selectFilterObj(pay_order_items,'food_id')
+    tmp_food_ids_str = '_'.join(str(s) for s in food_ids if s not in [None])
+
+
+    model_comment = MemberComment()
+    model_comment.member_id = member_info.id
+    model_comment.food_ids = '_%s_'%tmp_food_ids_str
+    model_comment.pay_order_id = pay_order_info.id
+    model_comment.score = score
+    model_comment.content = content
+    model_comment.created_time = getCurrentDate()
+    db.session.add(model_comment)
+
+    pay_order_info.comment_status = 1
+    pay_order_info.updated_time = getCurrentDate()
+    db.session.add(pay_order_info)
+
+    db.session.commit()
+
+
 
     return jsonify(resp)
 
