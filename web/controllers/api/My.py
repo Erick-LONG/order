@@ -4,6 +4,7 @@ import datetime
 from flask import request, jsonify, g
 
 from application import db
+
 from common.models.member.MemberComments import MemberComment
 from web.controllers.api import route_api
 from common.models.food.Food import Food
@@ -157,4 +158,26 @@ def myCommentAdd():
 
     db.session.commit()
 
+    return jsonify(resp)
+
+
+@route_api.route("/my/comment/list")
+def myCommentList():
+    resp = {'code': 200, 'msg': '操作成功~', 'data': {}}
+    member_info = g.member_info
+    comment_list = MemberComment.query.filter_by(member_id=member_info.id) \
+        .order_by(MemberComment.id.desc()).all()
+    data_comment_list = []
+    if comment_list:
+        pay_order_ids = selectFilterObj(comment_list, "pay_order_id")
+        pay_order_map = getDictFilterField(PayOrder, PayOrder.id, "id", pay_order_ids)
+        for item in comment_list:
+            tmp_pay_order_info = pay_order_map[item.pay_order_id]
+            tmp_data = {
+                "date": item.created_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "content": item.content,
+                "order_number": tmp_pay_order_info.order_number
+            }
+            data_comment_list.append(tmp_data)
+    resp['data']['list'] = data_comment_list
     return jsonify(resp)

@@ -15,7 +15,13 @@ Page({
     },
     onLoad: function (e) {
         var that = this;
+        that.setData({
+            id:e.id
+        });
         this.initCityData(1);
+    },
+    onShow:function(){
+        this.getInfo();
     },
     //初始化城市数据
     initCityData: function (level, obj) {
@@ -83,11 +89,11 @@ Page({
     },
     bindSave: function (e) {
         var that = this;
-        var nickename = e.detail.value.nickname;
+        var nickname = e.detail.value.nickname;
         var address = e.detail.value.address;
         var mobile = e.detail.value.mobile;
 
-        if (nickename == "") {
+        if (nickname == "") {
             app.tip({"content": "请填写联系人姓名"});
             return
         }
@@ -126,7 +132,7 @@ Page({
                 city_str:that.data.selCity,
                 district_id:district_id,
                 district_str:that.data.selDistrict,
-                nickname:nickename,
+                nickname:nickname,
                 address:address,
                 mobile:mobile
             },
@@ -143,6 +149,56 @@ Page({
         })
     },
     deleteAddress: function (e) {
-
+        var that = this;
+        var params = {
+            "content": "确定删除？",
+            "cb_confirm": function () {
+                wx.request({
+                    url: app.buildUrl("/my/address/ops"),
+                    header: app.getRequestHeader(),
+                    method: 'POST',
+                    data: {
+                        id: that.data.id,
+                        act:'del'
+                    },
+                    success: function (res) {
+                        var resp = res.data;
+                        app.alert({"content": resp.msg});
+                        if (resp.code == 200) {
+                            // 跳转
+                            wx.navigateBack({});
+                        }
+                    }
+                });
+            }
+        };
+        app.tip(params);
     },
+    getInfo: function () {
+        var that = this;
+        if (that.data.id < 1) {
+            return;
+        }
+        wx.request({
+            url: app.buildUrl("/my/address/info"),
+            header: app.getRequestHeader(),
+            data: {
+                id: that.data.id
+            },
+            success: function (res) {
+                var resp = res.data;
+                if (resp.code != 200) {
+                    app.alert({"content": resp.msg});
+                    return;
+                }
+                var info = resp.data.info;
+                that.setData({
+                    info: info,
+                    selProvince: info.province_str ? info.province_str : "请选择",
+                    selCity: info.city_str ? info.city_str : "请选择",
+                    selDistrict: info.area_str ? info.area_str : "请选择"
+                });
+            }
+        });
+    }
 });

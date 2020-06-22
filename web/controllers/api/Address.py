@@ -14,7 +14,28 @@ from common.libs.Helper import selectFilterObj, getDictFilterField, getCurrentDa
 from common.libs.UrlManager import UrlManager
 
 
-@route_api.route('/my/address/set',methods=['POST'])
+@route_api.route("/my/address/index")
+def myAddressList():
+    resp = {'code': 200, 'msg': '操作成功~', 'data': {}}
+    member_info = g.member_info
+    list = MemberAddress.query.filter_by(status=1, member_id=member_info.id) \
+        .order_by(MemberAddress.id.desc()).all()
+    data_list = []
+    if list:
+        for item in list:
+            tmp_data = {
+                "id": item.id,
+                "nickname": item.nickname,
+                "mobile": item.mobile,
+                "is_default": item.is_default,
+                "address": "%s%s%s%s" % (item.province_str, item.city_str, item.area_str, item.address),
+            }
+            data_list.append(tmp_data)
+    resp['data']['list'] = data_list
+    return jsonify(resp)
+
+
+@route_api.route('/my/address/set', methods=['POST'])
 def myAddressSet():
     resp = {'code': 200, 'msg': '操作成功', 'data': {}}
     member_info = g.member_info
@@ -91,3 +112,68 @@ def myAddressSet():
 
     return jsonify(resp)
 
+
+@route_api.route("/my/address/info")
+def myAddressInfo():
+    resp = {'code': 200, 'msg': '操作成功~', 'data': {}}
+    req = request.values
+    id = int(req['id']) if 'id' in req else 0
+    member_info = g.member_info
+
+    if id < 1 or not member_info:
+        resp['code'] = -1
+        resp['msg'] = "系统繁忙，请稍后再试~~"
+        return jsonify(resp)
+
+    address_info = MemberAddress.query.filter_by(id=id).first()
+    if not address_info:
+        resp['code'] = -1
+        resp['msg'] = "系统繁忙，请稍后再试~~"
+        return jsonify(resp)
+
+    resp['data']['info'] = {
+        "nickname": address_info.nickname,
+        "mobile": address_info.mobile,
+        "address": address_info.address,
+        "province_id": address_info.province_id,
+        "province_str": address_info.province_str,
+        "city_id": address_info.city_id,
+        "city_str": address_info.city_str,
+        "area_id": address_info.area_id,
+        "area_str": address_info.area_str
+    }
+    return jsonify(resp)
+
+
+@route_api.route("/my/address/ops", methods=["POST"])
+def myAddressOps():
+    resp = {'code': 200, 'msg': '操作成功~', 'data': {}}
+    req = request.values
+    id = int(req['id']) if 'id' in req else 0
+    act = req['act'] if 'act' in req else ''
+    member_info = g.member_info
+
+    if id < 1 or not member_info:
+        resp['code'] = -1
+        resp['msg'] = "系统繁忙，请稍后再试~~"
+        return jsonify(resp)
+
+    address_info = MemberAddress.query.filter_by(id=id, member_id=member_info.id).first()
+    if not address_info:
+        resp['code'] = -1
+        resp['msg'] = "系统繁忙，请稍后再试~~"
+        return jsonify(resp)
+
+    if act == "del":
+        address_info.status = 0
+        address_info.updated_time = getCurrentDate()
+        db.session.add(address_info)
+        db.session.commit()
+    elif act == "default":
+        MemberAddress.query.filter_by(member_id=member_info.id) \
+            .update({'is_default': 0})
+        address_info.is_default = 1
+        address_info.updated_time = getCurrentDate()
+        db.session.add(address_info)
+        db.session.commit()
+    return jsonify(resp)
