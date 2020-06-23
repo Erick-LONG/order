@@ -45,6 +45,12 @@ APP = {
     'domain':'http://10.211.55.4:8999'
 }
 
+PAY_STATUS_MAPPING = {
+    "1":"已支付",
+    "-8":"待支付",
+    "0":"已关闭"
+}
+
 PAY_STATUS_DISPLAY_MAPPING = {
     "-8":"待付款",
     "-7":"待发货",
