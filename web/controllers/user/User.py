@@ -34,17 +34,17 @@ def login():
     user_info = User.query.filter_by(login_name=login_name).first()
     if not user_info:
         resp['code'] = -1
-        resp['msg'] = '请输入正确的用户名或密码~~'
+        resp['msg'] = '请输入正确的用户名或密码~~ -1'
         return jsonify(resp)
 
     if user_info.login_pwd != UserService.genePwd(login_pwd, user_info.login_salt):
         resp['code'] = -1
-        resp['msg'] = '请输入正确的用户名或密码~~'
+        resp['msg'] = '请输入正确的用户名或密码~~ -2'
         return jsonify(resp)
 
     if user_info.status != 1:
         resp['code'] = -1
-        resp['msg'] = '账号已被禁用，联系管理员~~'
+        resp['msg'] = '账号已被禁用，联系管理员~~ -3'
         return jsonify(resp)
 
     response = make_response(json.dumps(resp))

@@ -146,10 +146,9 @@ def set():
     offset = (page - 1) * app.config['PAGE_SIZE']
     list = query.order_by(PayOrder.id.desc()).offset(offset).limit(app.config['PAGE_SIZE']).all()
 
-    stat_info = db.session.query(PayOrder, func.sum(PayOrder.total_price).label("total")) \
+    stat_info = db.session.query(PayOrder,func.sum(PayOrder.total_price).label("total"))\
         .filter(PayOrder.status == 1).first()
 
-    app.logger.info(stat_info)
     resp_data['list'] = list
     resp_data['pages'] = pages
     resp_data['total_money'] = stat_info[1] if stat_info[1] else 0.00
