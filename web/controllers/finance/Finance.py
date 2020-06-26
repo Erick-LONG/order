@@ -22,8 +22,15 @@ def index():
 
     query = PayOrder.query
 
-    if 'status' in req and int(req['status']) > -1:
-        query = query.filter(PayOrder.status == int(req['status']))
+    if 'status' in req:
+        query = query.filter_by(status=int(req['status']))
+    if not query:
+        resp_data['list'] = []
+        resp_data['search_con'] = req
+        resp_data['pay_status_mapping'] = app.config['PAY_STATUS_MAPPING']
+        resp_data['current'] = 'index'
+        return ops_render("finance/index.html", resp_data)
+
 
     page_params = {
         'total': query.count(),
