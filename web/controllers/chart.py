@@ -71,3 +71,34 @@ def finance():
 
     resp['data'] = data
     return jsonify(resp)
+
+
+@route_chart.route("/share")
+def share():
+    now = datetime.datetime.now()
+    date_before_30days = now + datetime.timedelta(days=-30)
+    date_from = getFormatDate(date=date_before_30days, format="%Y-%m-%d")
+    date_to = getFormatDate(date=now, format="%Y-%m-%d")
+
+    list = StatDailySite.query.filter(StatDailySite.date >= date_from) \
+        .filter(StatDailySite.date <= date_to).order_by(StatDailySite.id.asc()) \
+        .all()
+
+    resp = {'code': 200, 'msg': '操作成功~~', 'data': {}}
+    data = {
+        "categories":[],
+        "series":[
+            {
+                "name":"日分享",
+                "data":[]
+            }
+        ]
+    }
+
+    if list:
+        for item in list:
+            data['categories'].append( getFormatDate( date = item.date ,format = "%Y-%m-%d") )
+            data['series'][0]['data'].append( item.total_shared_count )
+
+    resp['data'] = data
+    return jsonify(resp)
