@@ -22,12 +22,12 @@ class JobTask():
 
     def run(self,params):
         act = params['act'] if 'act' in params else ''
-        date = params['parm'] if params['parm'] and len(params['parm']) >0 else getFormatDate(format="%Y-%m-%d")
+        date = params['param'][0] if params['param'] and len(params['param']) >0 else getFormatDate(format="%Y-%m-%d")
         if not act:
             return
 
-        date_from = date+'00:00:00'
-        date_to = date+'23:59:59'
+        date_from = date + " 00:00:00"
+        date_to = date + " 23:59:59"
 
         func_params = {
             'act':act,
